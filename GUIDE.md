@@ -1,7 +1,7 @@
 # TAA 1.0.1-rc5 使用说明
 
 - 产品：TAA 1.0.1-rc5
-- runtime：1.0.1-rc5（与产品版本同源）
+- runtime：`/version` 的 runtime 字段恒为 `2.2.53`（冻结排障值，不代表当前版本）
 - 本地入口：`http://127.0.0.1:6080/app`
 - 首次向导：`http://127.0.0.1:6080/setup/`
 - 公测中心：<https://alice.loomsci.com>

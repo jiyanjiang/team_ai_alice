@@ -34,9 +34,14 @@ macOS / Linux（Windows 用 WSL2）
 Python 3.10–3.13（推荐 3.12）
 curl、tar
 一个能执行终端命令的 AI IDE（opencode / Qoder / Cursor / Codex / Claude Code 等）
+一个你自己的模型 API key：DeepSeek / 阿里云百炼 / 火山方舟，三选一
 ```
 
-**不需要 agent key。**
+**不需要 agent key**（安装与注册都不要）。
+
+但**模型 key 是必需前置**：TAA 不自带模型。装完、注册完、建好 agent 后，
+要在 `/setup/key` 或 `/app/settings` 填一个模型 key，agent 才会真正上线；
+不填也能进工作区，只是没有可对话的 agent，发消息无人应答。
 
 ### 直接复制到终端
 
@@ -185,7 +190,7 @@ Windows：用 WSL2 的 /home/<user>/taa，不建议 /mnt/c
 
 ```text
 产品：TAA 1.0.1-rc5
-runtime：1.0.1-rc5（与产品版本同源）
+runtime：2.2.53（`/version` 的冻结排障字段，不代表当前版本）
 本地入口：http://127.0.0.1:6080/app
 公测中心：https://alice.loomsci.com
 包：releases/taa-1.0.1-rc5.tar.gz（3,969,509 bytes）

@@ -4,7 +4,7 @@
 
 | 制品 | 版本 | 包含 |
 |---|---|---|
-| `taa-1.0.1-rc5.tar.gz` | 1.0.1-rc5（版本轴合并，不再单列 runtime） | 见 release-notes：补齐 6 个人设模板、安装自检增「人设模板」、chromium 下载超时 |
+| `taa-1.0.1-rc5.tar.gz` | 1.0.1-rc5（`/version` 的 runtime 恒为 2.2.53，冻结排障值） | 见 release-notes：补齐 6 个人设模板、安装自检增「人设模板」、chromium 下载超时 |
 | `taa-1.0.1-rc4.tar.gz` | 1.0.1-rc4 / runtime 2.2.53 | 见 release-notes；**该包漏带 agents/_templates/*.yaml，全新安装打不开**，仅可用于升级 |
 | `taa-1.0.1-rc3.tar.gz` | 1.0.1-rc3 / runtime 2.2.51 | 双 peer 端口 6090/6091、监听自检、并发去重、更新刷新 |
 | 公库 main | 1.0.1-rc5 | installer、包、manifest、SHA256SUMS、IDE prompt、文档 |
