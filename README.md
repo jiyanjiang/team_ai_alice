@@ -1,4 +1,4 @@
-# TAA 1.0.1-rc3 · 公测
+# TAA 1.0.1-rc4 · 公测
 
 TAA 是装在一台电脑上的 **本地 Agent 宿主 + 对等协作节点**。
 
@@ -40,8 +40,22 @@ curl、tar
 
 ### 直接复制到终端
 
+推荐走中心分发通道（版本与 SHA256 由发布清单决定，不在脚本里写死）：
+
+```bash
+curl -fsSL https://alice.loomsci.com/install.sh | TAA_CHANNEL=beta sh -s -- --center https://alice.loomsci.com
+```
+
+从 GitHub 公开仓库装（同样读 `release-manifest.json`）：
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh
+```
+
+先看会装哪个版本、校验和是多少（不做任何改动）：
+
+```bash
+bash /tmp/taa-install.sh --dry-run
 ```
 
 安装完成后打开：
@@ -64,7 +78,7 @@ bash /tmp/taa-install.sh
 把下面整段粘贴给 IDE 的 Agent：
 
 ```text
-请在本机安装 TAA 1.0.1-rc3 公测包：
+请在本机安装 TAA 公测包（版本与校验和以 release-manifest.json 为准，当前 1.0.1-rc4）：
 
 curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh
 
@@ -170,13 +184,15 @@ Windows：用 WSL2 的 /home/<user>/taa，不建议 /mnt/c
 ## 版本与包
 
 ```text
-产品：TAA 1.0.1-rc3
-runtime：2.2.47
+产品：TAA 1.0.1-rc4
+runtime：2.2.53
 本地入口：http://127.0.0.1:6080/app
 公测中心：https://alice.loomsci.com
-包：releases/taa-1.0.1-rc3.tar.gz
-SHA256：516612810e90586f16d899ef0dd8e4f32d740738bd0777c93589f37e9a1069f1
+包：releases/taa-1.0.1-rc4.tar.gz（3,907,545 bytes）
+SHA256：bdf6b6863bbefca8ef99de4a973ab2265c73528bcc9bcbd423de0b253e7a617c
 ```
+
+以上四项与 `release-manifest.json` 一致；安装器直接读该清单，不另存副本。
 
 校验：
 
@@ -205,7 +221,7 @@ shasum -a 256 -c SHA256SUMS
 [已实现] 2 真人 + 2 agent 工作组目录与中心中继消息
 ```
 
-## 的边界
+## TAA 的边界
 
 ```text
 [仅本地] 审批通知进入本机 /app/inbox
@@ -245,7 +261,7 @@ shasum -a 256 -c SHA256SUMS
 ## 常见问题
 
 **Q：需要 agent key 吗？**
-不需要。1.0.1-rc3 安装不要求 agent key；TAA 账号在浏览器完成创建/登录。
+不需要。安装不要求 agent key；TAA 账号在浏览器完成创建/登录。
 
 **Q：会安装到哪里？**
 默认 `~/.taa`；可以用 `--home` 或 `TAA_HOME` 改路径。
