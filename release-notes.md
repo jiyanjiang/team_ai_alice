@@ -1,21 +1,20 @@
-# TAA 1.0.0-beta.35 · 公测
+# TAA 1.0.1-rc4 · 公测
 
-- 产品版本：`1.0.0-beta.35`
-- runtime：`2.2.47`
-- 包：`releases/taa-1.0.0-beta.35.tar.gz`
-- 大小：3,258,347 bytes
-- SHA256：`516612810e90586f16d899ef0dd8e4f32d740738bd0777c93589f37e9a1069f1`
+- 产品版本：`1.0.1-rc4`
+- runtime：`2.2.53`（上一版 2.2.51）
+- 包：`releases/taa-1.0.1-rc4.tar.gz`
+- 大小：3,907,545 bytes
+- SHA256：`bdf6b6863bbefca8ef99de4a973ab2265c73528bcc9bcbd423de0b253e7a617c`
 
-## 本版内容
+## 本版说明
 
-- peer listener 支持双端口：`6090 + 6091`。
-- 启动顺序改为先启动 peer listener，再启动中心心跳。
-- 6090 绑定失败时仍尝试 6091，并上报实际监听端口。
-- 没有任何 peer listener 时不再广告 LAN endpoint。
-- 修复群同步并发导致同一图片重复上传；R2 内容寻址。
-- 修复自动更新后页面不刷新。
-- 保留 6091 作为 6090 不可用时的备用直连端口。
+本文件只写可核实的发版事实；功能变更请对照 TAA 私有仓库的提交记录（公开仓库不含源码）。
 
-## 说明
+- 构建来源：`core/runtime + private taa/node-v05`（见包内 `BUILD_INFO.json`）。
+- 与上一版 `1.0.1-rc3` 的差异：runtime 2.2.51 → 2.2.53。
 
-这版不再假设 6090 一定可用；直接使用实际可用的 peer 端口。
+## 安装
+
+```bash
+curl -fsSL https://alice.loomsci.com/install.sh | TAA_CHANNEL=beta sh -s -- --center https://alice.loomsci.com
+```
