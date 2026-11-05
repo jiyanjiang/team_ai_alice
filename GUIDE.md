@@ -1,12 +1,12 @@
-# TAA 1.0.1-rc4 使用说明
+# TAA 1.0.1-rc5 使用说明
 
-- 产品：TAA 1.0.1-rc4
-- runtime：2.2.53
+- 产品：TAA 1.0.1-rc5
+- runtime：1.0.1-rc5（与产品版本同源）
 - 本地入口：`http://127.0.0.1:6080/app`
 - 首次向导：`http://127.0.0.1:6080/setup/`
 - 公测中心：<https://alice.loomsci.com>
-- 公开包：`releases/taa-1.0.1-rc4.tar.gz`
-- SHA256：`bdf6b6863bbefca8ef99de4a973ab2265c73528bcc9bcbd423de0b253e7a617c`
+- 公开包：`releases/taa-1.0.1-rc5.tar.gz`
+- SHA256：`1ba10b0ca9b49ba2cecedab47a66c22e011d2425c678168a9d4eb6598a54ce87`
 
 ---
 
@@ -52,7 +52,7 @@ curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/insta
 ### 1.2 交给 AI IDE
 
 ```text
-请在本机安装 TAA 1.0.1-rc4 公测包：
+请在本机安装 TAA 1.0.1-rc5 公测包：
 
 curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh
 
