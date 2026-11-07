@@ -1,11 +1,11 @@
-# TAA 1.0.1-rc13 使用说明
+# TAA 1.0.1-rc14 使用说明
 
-- 产品：TAA 1.0.1-rc13
+- 产品：TAA 1.0.1-rc14
 - runtime：`/version` 的 runtime 字段恒为 `2.2.53`（冻结排障值，不代表当前版本）
 - 本地入口：`http://127.0.0.1:6080/app`
 - 首次向导：`http://127.0.0.1:6080/setup/`
 - 公测中心：<https://alice.loomsci.com>
-- 公开包：`releases/taa-1.0.1-rc13.tar.gz`
+- 公开包：`releases/taa-1.0.1-rc14.tar.gz`
 - SHA256：`1ba10b0ca9b49ba2cecedab47a66c22e011d2425c678168a9d4eb6598a54ce87`
 
 ---
@@ -52,7 +52,7 @@ curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/insta
 ### 1.2 交给 AI IDE
 
 ```text
-请在本机安装 TAA 1.0.1-rc13 公测包：
+请在本机安装 TAA 1.0.1-rc14 公测包：
 
 curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh
 
