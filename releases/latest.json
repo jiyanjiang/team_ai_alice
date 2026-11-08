@@ -6,7 +6,7 @@
   "url": "https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/releases/taa-1.0.1-rc15.tar.gz",
   "sha256": "86161d17c8f4bdb909b38bec05269dbd53381cb03af678a10b8ae27273d802a0",
   "bytes": 4005161,
-  "published_at": "2026-11-08T01:52:40Z",
+  "published_at": "2026-11-08T01:53:49Z",
   "min_upgrade_from": [
     "1.0.1-rc14",
     "1.0.1-rc15"
