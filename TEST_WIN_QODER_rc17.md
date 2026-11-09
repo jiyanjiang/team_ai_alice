@@ -45,13 +45,15 @@ New-Item -ItemType Directory -Force -Path $dst | Out-Null
 curl.exe -L -o "$dst\taa.tar.gz" "https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/releases/taa-$v.tar.gz"
 tar -xzf "$dst\taa.tar.gz" -C $dst
 cd $dst\taa_agent
-.\install.ps1
+.\install.ps1 --center https://alice.loomsci.com --ref jiyanjiang
 ```
+
+`--ref jiyanjiang` 不要省：它决定注册时自动建立好友关系（见第 4 步）。
 
 ### B 路径（WSL2，与公仓文档一致）
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh
+curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh --center https://alice.loomsci.com --ref jiyanjiang
 ```
 
 装完必须满足：
@@ -69,30 +71,37 @@ curl.exe -sS http://127.0.0.1:6080/v1/health
 2. 建一个 agent（名字随意，建议 `<你的短名>`）；
 3. 填模型 key（DeepSeek / 百炼 / 方舟，三选一）。
 
-**关键判断**：你登录的账号是不是 `jiyanjiang`？
-- 是 → 与目标 owner 同属一人，第 4 步加好友会返回 `self_friend`，**跳过加好友**，报告里注明"同一 owner"。
-- 不是 → 继续第 4 步。
+**关键判断**：你登录的账号是不是 `jiyanjiang`？是 → 与目标同属一个 owner，不存在"加好友"这回事，第 4 步直接判"同一 owner"即可。
 
-## 4. 自动加 `jiyanjiang` 为好友
+## 4. 好友关系（邀请即好友，不需要批准）
 
-用本机 node key 直接调中心接口（不需要网页会话）：
+中心的规则是**注册当下就建立好友**，不排队、不待批：
+
+- 用一次性邀请码注册 → 写入 `status=approved`（`requested_by=invite`）；
+- 用主页推荐码注册（安装时 `--ref jiyanjiang`）→ 写入 `status=approved`（`requested_by=ref`）；
+- 两者都没有 → 兜底绑站点主人 `jiyanjiang`，同样 `approved`（`requested_by=default`）。
+
+所以正常情况下**什么都不用做**。先验证，把原始 JSON 贴进报告：
 
 ```powershell
 $idt = Get-Content "$env:USERPROFILE\.taa\identity.json" -Raw | ConvertFrom-Json
 $key = $idt.node.node_key
+curl.exe -sS "https://alice.loomsci.com/v05/owner/friends" -H "Authorization: Bearer $key"
+```
+
+判读：
+- 返回里出现 `"friend_username":"jiyanjiang"` 且 `"status":"approved"` → 已是好友，**直接过**。
+- 完全没有 `jiyanjiang` → 说明这次注册既没带 `--ref`、兜底也没生效（例如登录的是早先注册的老账号）。这时才补一次请求：
+
+```powershell
 curl.exe -sS -X POST "https://alice.loomsci.com/v05/owner/friends/request" `
-  -H "Authorization: Bearer $key" `
-  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $key" -H "Content-Type: application/json" `
   -d '{\"to_owner_id\":\"own_349ac8d12f3345cd\"}'
 ```
 
-判读返回：
-- `{"ok":true,"status":"pending"}` → 请求已发出，`jiyanjiang` 侧批准后即为好友（把这条贴进报告）。
-- `friendship_exists / approved` → 已经是好友，直接过。
-- `self_friend` → 同一 owner，正常，跳过。
-- `unauthorized` → node key 拿错了或节点未绑定 owner，回第 3 步。
+返回 `pending` 才说明走了这条兜底路线——报告里必须注明"自动好友没生效，用了手动请求"，这是要修的问题，不是正常流程。
 
-（Windows 上没有 `curl.exe` 时用 WSL：`curl -sS -X POST ... -H "Authorization: Bearer $(python -c "import json,pathlib;print(json.loads((pathlib.Path.home()/'.taa'/'identity.json').read_text())['node']['node_key'])")" ...`）
+（Windows 上没有 `curl.exe` 时用 WSL：`curl -sS "https://alice.loomsci.com/v05/owner/friends" -H "Authorization: Bearer $(python -c "import json,pathlib;print(json.loads((pathlib.Path.home()/'.taa'/'identity.json').read_text())['node']['node_key'])")"`）
 
 ## 5. 署名验收（本次发布的核心）
 
