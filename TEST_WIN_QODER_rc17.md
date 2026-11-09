@@ -30,7 +30,9 @@ curl.exe -sS -o NUL -w "%{http_code}`n" https://raw.githubusercontent.com/jiyanj
 ```
 
 - 返回 `200` → 走 **A 路径（原生 PowerShell）**。
-- 返回 `000` / 超时 → 先开代理；仍然不通就走 **B 路径（WSL2）**，并在报告里注明"raw 不可达"。
+- 返回 `000` / 超时 → 先开代理；仍然不通就用 jsDelivr 镜像（把 `raw.githubusercontent.com/jiyanjiang/team_ai_alice/main`
+  换成 `cdn.jsdelivr.net/gh/jiyanjiang/team_ai_alice@main`）下载安装包，
+  或在 WSL2 里走 **B 路径**，并在报告里注明"raw 不可达、用了镜像"。
 
 ## 2. 安装
 
