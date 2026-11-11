@@ -6,15 +6,16 @@
 - 首次向导：`http://127.0.0.1:6080/setup/`
 - 公测中心：<https://alice.loomsci.com>
 - 公开包：`releases/taa-1.0.1-rc24.tar.gz`
-- SHA256：`1ba10b0ca9b49ba2cecedab47a66c22e011d2425c678168a9d4eb6598a54ce87`
+- 大小：4,064,777 bytes
+- SHA256：`3d5322a0809f6732df9dd806abd8a27d9d791d6facb360867f3b3f89d4088f02`
 
 ---
 
 ## 0. 你需要什么
 
 ```text
-一台 macOS / Linux 电脑（Windows 用 WSL2）
-Python 3.10–3.13（推荐 3.12）
+一台 macOS / Linux 电脑（Windows 用原生 PowerShell 安装器，WSL2 可备选）
+Python 3.11 及以上（推荐 3.12；没有可用版本时安装器会用 uv 兜底）
 curl、tar
 一个能执行终端命令的 AI IDE
 可选：DeepSeek / 阿里云百炼 / 火山方舟 API Key
@@ -86,16 +87,16 @@ TAA_HOME="$HOME/Applications/taa" bash /tmp/taa-install.sh
 推荐：$HOME/Applications/taa 或 $HOME/taa
 不建议：/opt/taa（权限复杂）、/tmp/taa（重启会丢）
 不建议：带空格/中文路径（beta 不保证）
-Windows：WSL2 的 /home/<user>/taa
+Windows：装到用户目录下，不要用 C:\Program Files
 ```
 
 ### 1.4 Windows
 
 ```text
-优先 WSL2（Ubuntu）
-在 WSL 里运行安装器
-浏览器在 Windows 侧打开 http://127.0.0.1:6080/app/bridge
-Windows 原生未专门验证
+优先：原生 PowerShell 安装器
+  irm https://alice.loomsci.com/install.ps1 | iex
+备选：WSL2（Ubuntu）里运行 install.sh，浏览器在 Windows 侧打开
+原生路径已在 macOS × Windows 双机验收中跑通；更大规模仍需观察
 ```
 
 ---
@@ -151,7 +152,9 @@ https://alice.loomsci.com/u/<public_id>
 
 二维码只编码公开主页 URL；未注册用户可先看简介，再按页面提示安装 TAA。
 
-工作组消息当前经中心 HTTPS 中继，页面刷新获取；不是实时 WebSocket。两台真实物理机的 2 真人 + 2 agent 聊天仍需单独验收。
+工作组消息当前经中心 HTTPS 中继，页面刷新获取；不是实时 WebSocket。
+跨机群聊、图片、朋友圈已在 macOS × Windows 双机验收通过；
+"2 真人 + 2 agent 同场协作"这一场景仍需单独验收。
 
 ---
 
@@ -174,7 +177,8 @@ DeepSeek
 原则：
 
 ```text
-模型 key 只写本机 ~/.taa/config.toml（0600）
+模型 key 只写本机 ~/.taa/config.toml 的 [llm]（0600）
+团队名 / 拓扑等运行配置在 ~/.taa/config.yaml
 中心不保存
 不要把 key 发到聊天/帖子/截图
 ```
@@ -205,7 +209,15 @@ DeepSeek
 Ed25519 事件签名，公测版默认强制
 ```
 
-### 4.4 TAA 账号 / 组授权
+### 4.4 朋友圈
+
+```text
+发帖时多打一个 #lobby（或 朋友圈）标签 → 这条帖就是朋友圈，朋友可见
+已发出的普通帖 → 手动「分享」进入朋友圈
+普通频道帖未打标签、未分享 → 只在本机可见，不跨机
+```
+
+### 4.5 TAA 账号 / 组授权
 
 ```text
 /app/peer-grants
@@ -216,7 +228,7 @@ blob 权限
 
 当前公测版的审批通知只写本机 `/app/inbox`；中心通知端点在后续版本。
 
-### 4.5 备份
+### 4.6 备份
 
 ```text
 /app/backup
@@ -227,7 +239,7 @@ AES-GCM 加密包
 
 建议默认使用加密包；明文包不要外传。
 
-### 4.6 天气 / 调研
+### 4.7 天气 / 调研
 
 ```bash
 cd ~/.taa/app
@@ -261,20 +273,25 @@ cd ~/.taa/app
 
 ### 升级
 
-先备份，再重跑安装器：
+正常情况下更新器会自动处理（每天检查两次；装失败即熔断该版本，不会反复重装）。
+需要手动升级时，先备份，再重跑安装器（安装器会读 `release-manifest.json` 拿最新版本）：
 
 ```bash
 ~/.taa/app/taa stop
 bash /tmp/taa-install.sh
 ```
 
-### 回滚 beta.2
+### 回滚到指定版本
+
+从 `release-manifest.json` 或 `SHA256SUMS` 里取该版本的校验和，再显式指定版本与包指纹：
 
 ```bash
-TAA_VERSION=1.0.0-beta.2 \
-TAA_PACKAGE_SHA256=74157fd4ea492dd4583a53794fd6178d690265a135bc1ac5c97ac2bdc1c455de \
+TAA_VERSION=<要回滚到的版本> \
+TAA_PACKAGE_SHA256=<该版本的 sha256> \
 bash /tmp/taa-install.sh
 ```
+
+不要在不带校验和的情况下回滚——那等于关掉了唯一能发现包损坏的开关。
 
 ### 卸载
 
@@ -291,9 +308,9 @@ rm -rf ~/.taa
 
 ```text
 中心通知端点未进入当前公测版；审批通知只在本机 /app/inbox
-真实双物理机跨局域网未由发布方代跑
+看板快照同步到中心本版未打通（缺中心密钥读取）
+"2 真人 + 2 agent 同场协作"未由发布方代跑（跨机群聊/朋友圈/分享已双机验收）
 生产 TAA 账号登录态未由发布方代跑
-Windows 原生未专门验证
 100 Node 24h soak 未做
 远程完整 /app 未做
 工具市场执行未启用
@@ -307,8 +324,8 @@ Physics World / APS / sources 不在本包
 ## 8. 故障排查
 
 ```text
-Python 版本不足：安装 Python 3.10+
-curl/tar 缺失：安装对应工具；Windows 用 WSL
+Python 版本不足：安装 Python 3.11+（或用 TAA_PYTHON 指定解释器）
+curl/tar 缺失：安装对应工具；Windows 用原生安装器
 6080 被占用：--port 6081
 SHA256 不匹配：停止，不要绕过
 浏览器打不开：先运行 ~/.taa/app/taa status，检查端口

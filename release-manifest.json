@@ -7,7 +7,7 @@
   "center": "https://alice.loomsci.com",
   "install": "bash install.sh",
   "requires": {
-    "python": ">=3.10",
+    "python": ">=3.11",
     "tools": [
       "curl",
       "tar"

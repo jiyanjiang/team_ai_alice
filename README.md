@@ -30,8 +30,9 @@ http://127.0.0.1:6080/app
 要求：
 
 ```text
-macOS / Linux（Windows 用 WSL2）
-Python 3.10–3.13（推荐 3.12）
+macOS / Linux（原生）
+Windows（原生 PowerShell 安装器；WSL2 可作备选）
+Python 3.11 及以上（推荐 3.12；没有时安装器会用 uv 兜底）
 curl、tar
 一个能执行终端命令的 AI IDE（opencode / Qoder / Cursor / Codex / Claude Code 等）
 一个你自己的模型 API key：DeepSeek / 阿里云百炼 / 火山方舟，三选一
@@ -49,6 +50,12 @@ curl、tar
 
 ```bash
 curl -fsSL https://alice.loomsci.com/install.sh | TAA_CHANNEL=beta sh -s -- --center https://alice.loomsci.com
+```
+
+Windows 在 PowerShell 里用中心的原生安装器：
+
+```powershell
+irm https://alice.loomsci.com/install.ps1 | iex
 ```
 
 从 GitHub 公开仓库装（同样读 `release-manifest.json`）：
@@ -69,7 +76,7 @@ bash /tmp/taa-install.sh --dry-run
 http://127.0.0.1:6080/app/bridge
 ```
 
-如果系统默认 `python3` 是 3.14 且报 `ensurepip` 失败，改用本机 Python 3.12：
+如果系统默认 `python3` 高于 3.13 且报 `ensurepip` 失败，改用本机 Python 3.12：
 
 ```bash
 TAA_PYTHON=/opt/homebrew/bin/python3.12 \
@@ -181,7 +188,7 @@ TAA_HOME="$HOME/Applications/taa" bash /tmp/taa-install.sh
 不建议：/opt/taa（权限复杂）
 不建议：/tmp/taa（重启会丢）
 不建议：带空格/中文的路径（beta 不保证）
-Windows：用 WSL2 的 /home/<user>/taa，不建议 /mnt/c
+Windows：装到用户目录下（不要用 C:\Program Files）
 ```
 
 ---
@@ -193,16 +200,18 @@ Windows：用 WSL2 的 /home/<user>/taa，不建议 /mnt/c
 runtime：2.2.53（`/version` 的冻结排障字段，不代表当前版本）
 本地入口：http://127.0.0.1:6080/app
 公测中心：https://alice.loomsci.com
-包：releases/taa-1.0.1-rc24.tar.gz（3,959,552 bytes）
-SHA256：1ba10b0ca9b49ba2cecedab47a66c22e011d2425c678168a9d4eb6598a54ce87
+包：releases/taa-1.0.1-rc24.tar.gz（4,064,777 bytes）
+SHA256：3d5322a0809f6732df9dd806abd8a27d9d791d6facb360867f3b3f89d4088f02
 ```
 
 以上四项与 `release-manifest.json` 一致；安装器直接读该清单，不另存副本。
 
-校验：
+校验（只校验你手上这个包，不要求把历史上所有包都下下来）：
 
 ```bash
-shasum -a 256 -c SHA256SUMS
+shasum -a 256 releases/taa-1.0.1-rc24.tar.gz
+# 或从清单里取这一行来比对
+grep taa-1.0.1-rc24.tar.gz SHA256SUMS
 ```
 
 ---
@@ -213,10 +222,11 @@ shasum -a 256 -c SHA256SUMS
 [已实现] 本地 /app
 [已实现] TAA 账号 / Node / Agent
 [已实现] 群聊、频道、帖子、看板、团队、工具、设置
-[已实现] P2P 事件 / 附件同步（签名、增量、重试）
+[已实现] 跨机群聊与附件同步（P2P 直连，失败走中心中继）
+[已实现] 朋友圈：频道帖打 #lobby 标签即可见，朋友可见
+[已实现] 事件签名（Ed25519）、增量游标、重试
 [已实现] TAA 账号 / 组授权与审批
 [已实现] 加密备份 + 保留轮换
-[已实现] 中心组同步（beta）
 [已实现] weather / research.ask
 [已实现] 首屏创建/登录分流
 [已实现] 用户名自动查重，且 Alice = alice
@@ -231,15 +241,19 @@ shasum -a 256 -c SHA256SUMS
 ```text
 [仅本地] 审批通知进入本机 /app/inbox
 [未进入] 中心通知端点
-[未代跑] 两台真实物理机上的 2 真人 + 2 agent 聊天
+[未完成] 看板快照同步到中心（本版未打通密钥读取）
+[未代跑] 两台真实物理机上的 2 真人 + 2 agent 完整工作组场景
 [未做] 工作组实时 WebSocket（当前中心中继 + 页面刷新）
 [未做] agent 自动回复工作组
 [未代跑] 生产 TAA 账号登录态
-[未专门验证] Windows 原生
 [未做] 100 Node 24h soak
 [未做] 远程完整 /app
 [未启用] 工具市场执行
 ```
+
+> 跨机能力已用 **macOS × Windows 两台真机**验收（双机 38 项，0 失败）：
+> 群聊文字/图片、朋友圈、分享引用、隐私负向（非好友不可见、未分享频道帖不跨机）。
+> 未覆盖的是"2 真人 + 2 agent 同场协作"和更大规模 soak。
 
 完整说明见 [release-notes.md](release-notes.md)。
 
