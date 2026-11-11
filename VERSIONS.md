@@ -1,23 +1,19 @@
 # TAA 版本与包边界
 
-> 权威来源是 `release-manifest.json`（安装器只读它）。本页是给人看的索引，
-> 版本若与本页不一致，以清单为准。
+> **权威来源是 `release-manifest.json`**（安装器只读它）。本页是给人看的索引；
+> 两者不一致时以清单为准。
 
 ## 当前公测
 
-| 制品 | 版本 | 包含 |
-|---|---|---|
-| `taa-1.0.1-rc24.tar.gz` | 1.0.1-rc24（`/version` 的 runtime 恒为 2.2.53，冻结排障值） | 见 release-notes：**朋友圈 = 多打一个 `#lobby` 标签**；可见性判据收口；发帖必发事件全覆盖；门禁 143/143、双机 38 项 0 失败 |
-
-**公库 main = 1.0.1-rc24**：installer、包、manifest、SHA256SUMS、IDE prompt、文档。
-
-包指纹（与 `release-manifest.json` 一致）：
-
 ```text
-taa-1.0.1-rc24.tar.gz
-4,064,777 bytes
-3d5322a0809f6732df9dd806abd8a27d9d791d6facb360867f3b3f89d4088f02
+version: 1.0.1-rc24
+file:    taa-1.0.1-rc24.tar.gz
+bytes:   4,064,777
+sha256:  3d5322a0809f6732df9dd806abd8a27d9d791d6facb360867f3b3f89d4088f02
 ```
+
+本版内容见 [release-notes.md](release-notes.md)：朋友圈 = 多打一个 `#lobby` 标签；
+可见性判据收口到一处；发帖必发事件全覆盖；门禁 143/143、双机 38 项 0 失败。
 
 ## 同一条公测线上的近期包
 
