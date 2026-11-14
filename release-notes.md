@@ -1,62 +1,73 @@
-# TAA 1.0.1-rc24 · 公测
+# TAA 1.0.1-rc34 · 公测
 
-- 产品版本：`1.0.1-rc24`
+- 产品版本：`1.0.1-rc34`
 - runtime：`/version` 的 runtime 字段恒为 `2.2.53`（冻结排障值，不代表当前版本）
-- 包：`releases/taa-1.0.1-rc24.tar.gz`
-- 大小：4,064,777 bytes
-- SHA256：`3d5322a0809f6732df9dd806abd8a27d9d791d6facb360867f3b3f89d4088f02`
-- 上一版：`1.0.1-rc23`　协议：`1.0`（不变）　中心：无需升级
+- 包：`releases/taa-1.0.1-rc34.tar.gz`
+- 大小：4,096,296 bytes
+- SHA256：`016531a0b0328a96f405ee9dc445830efc359047aa8d2179f75baf1f5b391c2e`
 
-## 本版一句话
-
-**朋友圈就是「发帖时多打一个 `#lobby` 标签」**——可见性判据收口到一处，不再各写一份。
-
-## 变化
-
-- **入口归一**：命中朋友圈标签（`#lobby` / `lobby` / `朋友圈`）的帖，落库前统一成
-  `kind=moment`、`visibility=friends`。网页表单与 `/v1/posts` API 走同一套判据，
-  不会再出现「同一条帖走 API 就变成公开」。
-- **出网判据唯一**：新增出网级别的单一函数，发帖入口与出口闸门共用它；
-  普通频道帖（未打标签、未分享）不跨机这条闸门保持不变。
-- **事件全覆盖**：网页发帖、长任务复盘、执行结果三条兜底路径都补发 `post.created`，
-  且出网级别与作者信息随事件走，对端不再按「只在本机」丢弃、也不会署错名。
+> 上一版：`1.0.1-rc33`
+> 中心：无需变更
+> A 端 soak：本版含升级链路改动，按 §3「高」风险口径执行（跨机 10 轮 + 端到端用例）
 
 ## 修复
 
-- 朋友圈帖被放大成公开：事件载荷曾直接用调用方传的可见性（常为空 → 公开），
-  导致「朋友可见」的帖以公开形态出网。现已入口归一，事件与库内一致。
-- 兜底事件到不了对端：两条兜底路径没带出网级别，默认成「只在本机」，两端都丢弃。
-- 先发事件后提交：对端收到事件立刻来拉时本机事务未提交，帖子读不到、链接仍死。
-  改为先提交再发事件。
-- 直投积压虚高：统计口径漏了「对端发来的」消息，把入站算成待投。
-- 拉取候选地址：不再把对端自报的端点当候选（真机上常是不可达的另一网段，每轮拖满超时）。
+- **升级 SWAP 必失败（P0，B-001）**：`taa_upgrade.stop()` 原来只做 launcher stop + 按端口杀监听者，
+  不清 `app` 目录内的 agent 运行时（`runtime/supervisor|loop|dispatcher|chatroom_agent.py`）
+  与 cwd 落在 `app` 的 cmd 外壳。Windows 上只要还有进程的 cwd/句柄在目录内，
+  `os.replace(app, prev)` 必然 `WinError 32`，自动更新 100% 卡在 SWAP。
+  现在端口杀完后统一调用 `kill_app_processes()`：跨平台列出命令行指向 `<home>/app` 的进程并结束；
+  两次仍杀不掉则明确报错，不硬闯 SWAP。
+- **升级器自杀（P0，B-002）**：Windows 上 venv python 会派生一个同命令行的解释器进程，
+  `os.getpid()` 只排除其中一个，另一个被当成"占用者"后被 `taskkill /T` 连整棵树（含升级器）清掉
+  ——表现为停在 `phase=STOP`、失败日志 0 字节、服务一起断。
+  新增 `_self_tree()`，排除自己 + 全部祖先 pid。
+- **`restart_agent` 在 Windows 上无法收敛（P1，B-003/B-004）**：原来无条件 `check_output(["ps", ...])`，
+  Windows 报 `WinError 2` → `found 0` → 停不掉旧套，同机出现两套 supervisor。
+  改为 Windows 走 `Get-CimInstance Win32_Process`；`AGENT_RE` 同时接受 `\` 与 `/`。
 
-## 已知问题
+## 新增
 
-- **双向生效需两端同为 rc24**：一端旧一端新会出现「新版打标签能过去、旧版打标签过不来」。
-- 历史遗留的「朋友圈帖落在普通频道」不会自动补发事件；需要时重新发或手动分享。
-- 看板快照同步到中心本版未打通（缺中心密钥读取），不影响本地看板。
-- 投递队列里可能留有验收用的测试消息，属运行态数据，不清理。
-
-## 安装
-
-```bash
-curl -fsSL https://alice.loomsci.com/install.sh | TAA_CHANNEL=beta sh -s -- --center https://alice.loomsci.com
-```
-
-先看会装哪个版本、校验和是多少（不做任何改动）：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh --dry-run
-```
+- `scripts/xmachine_soak.py`：跨机 soak 工具。每轮 7 个判据（A→B 文字 + 幂等 1 行 / B→A 文字 /
+  双向图片 + peer-blob 字节 md5），前置硬门要求两端 `runtime_version` 相等，退出码可直接进门禁。
+- `docs/NODES.md`：项目节点库（当前节点 + 退出判据 + 明确不含项）。
+- `docs/BUGS.md`：bug 库（P0–P3 分级、计划版本、状态）。
+- 测试：`test_restart_agent_procs.py`（10 项）；`test_upgrade_stop_fallback.py` 扩 ⑥⑦⑧（13 项），
+  两者均已纳入 `release_check`。
 
 ## 兼容性
 
-- 协议 `1.0`，无破坏性 schema 变更。自 `1.0.1-rc22`、`1.0.1-rc24` 可直升本版。
-- 老事件没有出网级别字段时，按频道 / kind / visibility / 标签重算；仍判不出来按「只在本机」处理（宁严不泄）。
+- 协议 `1.0`，无 schema 迁移、无配置新增、无依赖变化。
+- 升级路径本身修复，旧版本（含 rc31/rc32/rc33）可直接升到本版。
+- 注意：升级会整体替换 `app/`，手工放进 `app/` 的改动会被下次升级覆盖；修复需进发布包。
 
-## 验证
+## 旧功能汇总（回归）
 
-- 发布门禁 143/143 全绿。
-- 真机双机（macOS × Windows）38 项：37 PASS / 0 FAIL / 1 INFO。
-- 新增路径真机验证：普通频道无标签不跨机；加 `#lobby` 标签后 `kind=moment`、`visibility=friends`。
+- `release_check`：见下「自检结果」。
+- 见 `docs/23_功能检查清单.md`。
+
+## 已知问题（本版不修，已排 N35）
+
+- B-005：lock 文件写死 pid，进程被杀后 lock 仍是死 pid，`group_ingress` 会重复拉起 dispatcher。
+- B-006：`restart_agent._stop()` 在 Windows 的"停旧套"未做真机收敛验证（仅验证了识别层）。
+- B-007：朋友圈纯图帖发图偶发不稳定（判据：同一操作 10 次须 10/10）。
+
+## 验证方法
+
+```bash
+TEAMAI_URL=http://127.0.0.1:6080 ../venv/bin/python scripts/release_check.py
+../venv/bin/python scripts/xmachine_std_test.py
+../venv/bin/python scripts/xmachine_soak.py --rounds 10
+```
+
+## 自检结果
+
+- release_check：**151 / 151 通过**
+- 跨机标准测试：39 项，**PASS 38 / FAIL 0 / INFO 1**（凭证 `reports/taa_v1/gate_xmachine.json`，version=1.0.1-rc34）
+- 跨机 soak：**10 / 10 轮**，70 个检查点全 PASS，6.5 分钟（`reports/taa_v1/soak_xmachine_rc34_20261114.json`）
+- 真机升级：A/B 两机均 `COMMITTED`，装后 `health.runtime_version=1.0.1-rc34`
+- 包：4,096,296 B，sha256 `016531a0b0328a96f405ee9dc445830efc359047aa8d2179f75baf1f5b391c2e`
+
+## 回滚点
+
+- git tag：`v1.0.1-rc34`（前一稳定点：`v1.0.1-rc33`）

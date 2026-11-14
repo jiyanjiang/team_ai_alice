@@ -1,13 +1,13 @@
-# TAA 1.0.1-rc24 使用说明
+# TAA 1.0.1-rc34 使用说明
 
-- 产品：TAA 1.0.1-rc24
+- 产品：TAA 1.0.1-rc34
 - runtime：`/version` 的 runtime 字段恒为 `2.2.53`（冻结排障值，不代表当前版本）
 - 本地入口：`http://127.0.0.1:6080/app`
 - 首次向导：`http://127.0.0.1:6080/setup/`
 - 公测中心：<https://alice.loomsci.com>
-- 公开包：`releases/taa-1.0.1-rc24.tar.gz`
-- 大小：4,064,777 bytes
-- SHA256：`3d5322a0809f6732df9dd806abd8a27d9d791d6facb360867f3b3f89d4088f02`
+- 公开包：`releases/taa-1.0.1-rc34.tar.gz`
+- 大小：4,096,296 bytes
+- SHA256：`016531a0b0328a96f405ee9dc445830efc359047aa8d2179f75baf1f5b391c2e`
 
 ---
 
@@ -53,7 +53,7 @@ curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/insta
 ### 1.2 交给 AI IDE
 
 ```text
-请在本机安装 TAA 1.0.1-rc24 公测包：
+请在本机安装 TAA 1.0.1-rc34 公测包：
 
 curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh
 
