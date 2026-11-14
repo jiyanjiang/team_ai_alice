@@ -1,13 +1,13 @@
-# TAA 1.0.1-rc35 使用说明
+# TAA 1.0.1-rc36 使用说明
 
-- 产品：TAA 1.0.1-rc35
+- 产品：TAA 1.0.1-rc36
 - runtime：`/version` 的 runtime 字段恒为 `2.2.53`（冻结排障值，不代表当前版本）
 - 本地入口：`http://127.0.0.1:6080/app`
 - 首次向导：`http://127.0.0.1:6080/setup/`
 - 公测中心：<https://alice.loomsci.com>
-- 公开包：`releases/taa-1.0.1-rc35.tar.gz`
-- 大小：4,101,053 bytes
-- SHA256：`87138d78febc683c08aea5049df71f5484eb3d65431a89ab9d364c068f079eae`
+- 公开包：`releases/taa-1.0.1-rc36.tar.gz`
+- 大小：4,112,630 bytes
+- SHA256：`fcaca765a25328f3195c362cfb4d70178ec9874742a302717041aacd7c047446`
 
 ---
 
@@ -53,7 +53,7 @@ curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/insta
 ### 1.2 交给 AI IDE
 
 ```text
-请在本机安装 TAA 1.0.1-rc35 公测包：
+请在本机安装 TAA 1.0.1-rc36 公测包：
 
 curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh
 

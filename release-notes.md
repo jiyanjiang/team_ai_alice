@@ -1,86 +1,87 @@
-# TAA 1.0.1-rc35 · 公测
+# TAA 1.0.1-rc36 · 公测
 
-- 产品版本：`1.0.1-rc35`
+- 产品版本：`1.0.1-rc36`
 - runtime：`/version` 的 runtime 字段恒为 `2.2.53`（冻结排障值，不代表当前版本）
-- 包：`releases/taa-1.0.1-rc35.tar.gz`
-- 大小：4,101,053 bytes
-- SHA256：`87138d78febc683c08aea5049df71f5484eb3d65431a89ab9d364c068f079eae`
+- 包：`releases/taa-1.0.1-rc36.tar.gz`
+- 大小：4,112,630 bytes
+- SHA256：`fcaca765a25328f3195c362cfb4d70178ec9874742a302717041aacd7c047446`
 
-> 上一版：`1.0.1-rc34`
+> 上一版：`1.0.1-rc35`
 > 中心：无需变更
-> A 端 soak：本版动 CLI 与安装链，按 `docs/25 §3` 风险分级执行（跨机 ≥10 轮 + Win10 实机首装）
+> A 端 soak：本版动读路径与跨机授权，按 `docs/25 §3` 风险分级执行（跨机 ≥10 轮）
 
 ## 修复
 
-- **Windows 上 `python bin\taa` 永远自举不到 venv（P0）**：`cli/teamai.py` 的自举段与 `doctor`
-  两处都写死 `venv/bin/python`，Windows 实际是 `venv/Scripts/python.exe`。后果是 CLI 静默回落
-  系统 python（缺 PyYAML 时直接 `ModuleNotFoundError`），`doctor` 则恒报「venv 解释器 WARN」。
-  现在统一走 `_venv_python(home)`（判据与 `scripts/install_report.py:73-79` 一致）。
-  `doctor` 的「是否绑定」也从 `realpath` 比较改为 `sys.prefix != sys.base_prefix` —— 与自举段
-  同一判据，避免把 venv 的 python 软链误判成"未绑定"。
+- **页面卡顿的根因：请求线程同步出网（P0）**。`docs/561` 真机取证显示 `/app/chats` 首访
+  15–25s、`/app/settings/profile` 0.85–1.47s，慢在请求线程里直接打中心拉好友/资料。
+  改为 **内存缓存（60s）→ SQLite 快照（冷启动首屏）→ 后台线程刷新**，请求线程零出网；
+  首屏无快照时由后台线程补齐，页面不再等中心。实测 `/app/chats` 冷首访 4ms、
+  `/app/settings` warm 113ms / cold 257–389ms。
 
-- **受限令牌下穿越 junction 崩三处（P1）**：Windows 安装形态的 `app\agents` / `app\bootstrap`
-  是指向 `$TAA_HOME` 的 junction。在 IDE 代理沙箱这类受限令牌上下文里穿越会报
-  `WinError 448 不受信任装入点`（Win10 报告 `p-4b60b13e`）：
-  - `scripts/install_report.py`：人设模板检查改为「`$TAA_HOME/agents/_templates` 优先、
-    `app/agents/_templates` 回退」，`OSError` 跳过 —— 原实现会在自检第一步中断；
-  - `core/security.py`：`BOOTSTRAP_DIR.mkdir` 失败不再阻断启动，改从
-    `$TAA_HOME/bootstrap/master.key` 读**同一物理文件**（只换访问路径，**绝不另生成密钥**，
-    否则库里既有密文全部解不开）；
-  - `cli/teamai.py`：`_key` / `_root_token` 改为「包根优先、`$TAA_HOME` 兜底」，穿越失败
-    自动换下一个候选 —— 源码树语义不变，不会误读另一实例的 key。
+- **派生好友同步节流（P1）**。`friend_ids()` 在 DM 列表、朋友圈可见性等**读路径**被高频调用，
+  原实现每次跑 project+team 全量 UPSERT 并 commit —— 读请求持有写锁，与后台写（风格学习、心跳）
+  相撞即排队，表现为页面偶发十几秒卡顿与 `database is locked`。
+  改为 60s 内不重算（`TAA_FRIEND_SYNC_TTL` 可调）；新增好友走显式写入点，不依赖被动派生。
 
-- **`doctor` 的 `config.toml` 提示**改为「模型功能可选，本机服务与身份不受影响（需要模型时跑
-  /setup/）」。等级仍是 WARN，不为凑"全绿"而降级。
+- **SQLite 锁等待 30s → 5s（P1）**。30s 会把"锁冲突"变成"页面假死 30 秒"，
+  用户感知就是卡顿。改为 5s 快速暴露（上层有重试/降级）；排障需要长等待时用
+  `TAA_DB_BUSY_MS` 临时调大。
 
-## 重构（无行为变化）
+- **跨机唤醒 503 后静默退化（P1）**。`is_friend_node()` 当时判 False 就建了 pending 再没人管，
+  于是唤醒持续 503、不发任何信号，链路静默退到 20s 轮询（实测落地延迟 12s/12s/42s）。
+  本版补齐两端：**好友即授权**（启动补批 + 请求时兜底补批，只加不减可回滚）+
+  **失败可见**（记录最近一次失败码与提示，界面上标出"跨机同步被拒绝：对方需要批准你的节点"）。
+  `docs/561` 的 1–2 秒量级路径因此恢复。
 
-- **install 类逻辑收敛为单一模块 `scripts/taa_install_ops.py`**：解释器探测（含 uv 兜底）、
-  pip 源测速、运行时复制与数据目录/模板种子、venv 检测/备份/重建、依赖安装（core + 可选 image）、
-  launcher 启动、装完自检、`install-timings.json`。后续的首装 / 重装 / 修复 / 迁移等动作共用
-  这一套底座，不再各写一份而漂移。
-- `scripts/taa_bootstrap.py` 从 408 行降到 179 行，只保留「命令行 → 环境打印 → 包完整性 →
-  分派首装 / 升级」；升级的原子替换与回滚仍归 `taa_upgrade.py`。
-- 兼容：`Timer` / `pick_index` / `python_hint` / `write_timings` 等旧名保留 re-export。
-- 打包：`build_taa_v1.py` 把 `taa_install_ops.py` 列入必含件 —— 缺件会响亮失败，
-  不会静默产出半个包。
+- **朋友圈纯图帖发不出去（P0，B-007）**。去重 key 只有（标题,正文），纯图帖正文为空 → key 恒为
+  `"\n"` → 命中历史空正文帖 → 302 回旧帖、新帖不落库。key 并入**附件指纹**：
+  同文同图仍判重、同文不同图各成一条。判据 10/10（热进程）+ 10/10（冷进程）+ 2 轮冒烟 = 22/22。
 
 ## 新增
 
-- `scripts/taa_install_ops.py`：安装底座模块（职责见上「重构」），后续安装类动作共用。
-- `cli/teamai.py` 新增 `_venv_python(home)` 与 `_local_roots()`：前者统一 venv 解释器路径，
-  后者统一「包根 → `$TAA_HOME`」候选根，读 agent key / root token 都走它。
-- 无新路由、无新 CLI 子命令、无新依赖。
+- `scripts/page_speed.py`：10 个用户可见页面的耗时自检（warm / cold 两口径），
+  已作为 `release_check` 的硬判据「每页 ≤ 2s」。
+  理由：`/app/chats` 那次事故**功能全绿、接口看着正常**，只有"按下一个页面要多久"能暴露。
+- `scripts/cold_check.py` + `./gate.sh --cold`：冷启动口径自检（前置快照 → 重启 →
+  每页只测第一枪 → 核对服务/版本/agent 树恢复 → 落凭证 `reports/taa_v1/cold_check.json`）。
+- **发版硬闸从 L1+L2 扩到 L1+L2+L3**：`publish_release.py` 现在要求
+  `gate_release_check.json`（L1）+ `gate_xmachine.json`（L2）+ `cold_check.json`（L3）
+  三份「同版本、24h 内、passed」凭证，缺一项即拒绝发版。
+- `scripts/test_moments_image_post.py`（B-007 判据，走真实上传/发帖链路，登记为外部用例）。
+- `scripts/test_peer_grants_auto.py`（好友即授权：存量补批 / 授权兜底）。
+- 新表 `ui_snapshot`（懒建，`create table if not exists`）：首屏快照与刷新时间，供冷启动兜底。
 
 ## 兼容性
 
-- 协议 `1.0`，无 schema 迁移、无配置新增、无依赖变化。
-- 升级路径不变，旧版本（含 rc34 及更早）可直接升到本版。
-- `bin/taa-core`（bash）与 `taa.cmd`（Windows 主入口）未改。
+- 协议 `1.0` 不变，无破坏性 schema 迁移（`ui_snapshot` 首次写入时自建）。
+- 无新依赖、无新配置项；`TAA_FRIEND_SYNC_TTL` / `TAA_DB_BUSY_MS` 为可选环境变量，不设即用默认。
+- 升级路径不变，rc35 及更早版本可直接升到本版。
 
-## 已知问题（本版不修）
+## 已知问题
 
-- B-005 / B-006 / B-007 沿用 rc34 的结论与计划版本。
-- 受限令牌（IDE 代理沙箱）仍有场景需要正常会话才能跑通安装/自检 —— 本版只把已验证的三处崩点
-  改为"降级可读"，不承诺沙箱内全通。
+- B-007 的 10/10 判据是单机同链路重复，不含弱网/大图/并发上传的极端组合。
+- 受限令牌（IDE 代理沙箱）场景仍需正常会话才能跑通安装/自检，本版未改变这一点。
+- 冷口径在无 `pgrep` 的平台上无法探测 agent 进程，会显示"未知"并**不据此判红**（宁可少判，不误报）。
 
 ## 验证方法
 
 ```bash
-TEAMAI_URL=http://127.0.0.1:6080 ../venv/bin/python scripts/release_check.py
-../venv/bin/python scripts/test_fresh_install_ux.py
-../venv/bin/python scripts/test_bootstrap_local_keys.py
+./gate.sh                    # L1 门禁（含页面速度 ≤2s 硬判据）
+./gate.sh --cold             # L3 冷口径（会重启服务）
+python scripts/xmachine_std_test.py                # L2 双机
+python scripts/test_moments_image_post.py --times 10 --url http://127.0.0.1:6080
 ```
 
 ## 自检结果
 
-- release_check：**152 / 152 通过**
-- `test_fresh_install_ux`：6 / 6；`test_bootstrap_local_keys`：ALL PASS
-- 本机安装形态：`install_report.py` 连续两次 **10 ok / 0 warn / 0 fail**；`taa doctor` 无 WARN 1
-- Win10 报告（`p-4b60b13e`）暴露的 2 个 WARN 与 3 个 junction 崩点已按上述处置；
-  **rc35 的 Win10 实机首装验证待执行**
-- 包：4,101,053 B，sha256 `87138d78febc683c08aea5049df71f5484eb3d65431a89ab9d364c068f079eae`
+- `release_check`：**153 / 153 通过**（页面速度 10/10，warm）
+- 冷口径（`./gate.sh --cold`）：**10 / 10 合格**，最慢 `/app/settings` 263ms，`/app/chats` 4ms，
+  重启后服务 0.0s 即回、agent 树随即自愈；凭证 `reports/taa_v1/cold_check.json`（version=1.0.1-rc36）
+- 本机安装实例已升至 rc36（`journal=COMMITTED`，health 200，agents=14）
+- 双机 XM-STD（L2）：待 B 端升到 rc36 后复跑回填
+- 包：`reports/taa_v1/taa-1.0.1-rc36.tar.gz`，**4,112,630 B**，
+  sha256 `fcaca765a25328f3195c362cfb4d70178ec9874742a302717041aacd7c047446`
 
 ## 回滚点
 
-- git tag：`v1.0.1-rc35`（前一稳定点：`v1.0.1-rc34`）
+- git tag：`v1.0.1-rc36`（前一稳定点：`v1.0.1-rc35`）

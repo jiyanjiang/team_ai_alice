@@ -6,10 +6,10 @@
 ## 当前公测
 
 ```text
-version: 1.0.1-rc35
-file:    taa-1.0.1-rc35.tar.gz
-bytes:   4,101,053
-sha256:  87138d78febc683c08aea5049df71f5484eb3d65431a89ab9d364c068f079eae
+version: 1.0.1-rc36
+file:    taa-1.0.1-rc36.tar.gz
+bytes:   4,112,630
+sha256:  fcaca765a25328f3195c362cfb4d70178ec9874742a302717041aacd7c047446
 ```
 
 本版内容见 [release-notes.md](release-notes.md)：朋友圈 = 多打一个 `#lobby` 标签；
