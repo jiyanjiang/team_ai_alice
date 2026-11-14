@@ -1,4 +1,4 @@
-# TAA 1.0.1-rc34 · 公测
+# TAA 1.0.1-rc35 · 公测
 
 TAA 是装在一台电脑上的 **本地 Agent 宿主 + 对等协作节点**。
 
@@ -90,7 +90,7 @@ bash /tmp/taa-install.sh
 把下面整段粘贴给 IDE 的 Agent：
 
 ```text
-请在本机安装 TAA 公测包（版本与校验和以 release-manifest.json 为准，当前 1.0.1-rc34）：
+请在本机安装 TAA 公测包（版本与校验和以 release-manifest.json 为准，当前 1.0.1-rc35）：
 
 curl -fsSL https://raw.githubusercontent.com/jiyanjiang/team_ai_alice/main/install.sh -o /tmp/taa-install.sh && bash /tmp/taa-install.sh
 
@@ -196,12 +196,12 @@ Windows：装到用户目录下（不要用 C:\Program Files）
 ## 版本与包
 
 ```text
-产品：TAA 1.0.1-rc34
+产品：TAA 1.0.1-rc35
 runtime：2.2.53（`/version` 的冻结排障字段，不代表当前版本）
 本地入口：http://127.0.0.1:6080/app
 公测中心：https://alice.loomsci.com
-包：releases/taa-1.0.1-rc34.tar.gz（4,096,296 bytes）
-SHA256：016531a0b0328a96f405ee9dc445830efc359047aa8d2179f75baf1f5b391c2e
+包：releases/taa-1.0.1-rc35.tar.gz（4,101,053 bytes）
+SHA256：87138d78febc683c08aea5049df71f5484eb3d65431a89ab9d364c068f079eae
 ```
 
 以上四项与 `release-manifest.json` 一致；安装器直接读该清单，不另存副本。
@@ -209,9 +209,9 @@ SHA256：016531a0b0328a96f405ee9dc445830efc359047aa8d2179f75baf1f5b391c2e
 校验（只校验你手上这个包，不要求把历史上所有包都下下来）：
 
 ```bash
-shasum -a 256 releases/taa-1.0.1-rc34.tar.gz
+shasum -a 256 releases/taa-1.0.1-rc35.tar.gz
 # 或从清单里取这一行来比对
-grep taa-1.0.1-rc34.tar.gz SHA256SUMS
+grep taa-1.0.1-rc35.tar.gz SHA256SUMS
 ```
 
 ---
